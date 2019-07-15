@@ -12,6 +12,9 @@ $ cmake ..
 $ make all
 ```
 
+The `master` branch does not include all the functionality needed for environments with restricted recommendability, as this imposes some unnecessary overhead when all items are recommendable.
+Code and experiments for this setting can be found in the `recommendability` branch.
+
 Abstract for the paper:
 > "The problem of computing all pairwise similarities in a large collection of vectors is a well-known and common data mining task.
 > As the number and dimensionality of these vectors keeps increasing, however, currently existing approaches are often unable to meet the strict efficiency requirements imposed by the environments they need to perform in.
