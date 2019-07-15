@@ -2,6 +2,8 @@
 
 C++ source code for the Dynamic Index algorithm proposed in "Efficient Similarity Computation for Collaborative Filtering in Dynamic Environments", as appeared in the proceedings of the 2019 ACM International Conference on Recommender Systems.
 
+
+## Requirements and Installation
 OpenMP is required for parallellisation.
 Instructions for compilation using CMake are as follows:
 
@@ -12,6 +14,11 @@ $ cmake ..
 $ make all
 ```
 
+## Data Format
+All experiments expect a .csv-file containing user-item-timestamp triplets, including a header.
+For the incremental experiments, we expect the file to be ascendingly sorted on the timestamp-column.
+
+## Notes
 The `master` branch does not include all the functionality needed for environments with restricted recommendability, as this imposes some unnecessary overhead when all items are recommendable.
 Code and experiments for this setting can be found in the `recommendability` branch.
 
