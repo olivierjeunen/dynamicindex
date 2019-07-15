@@ -3,7 +3,6 @@
 
 //#include <boost/serialization/vector.hpp>
 #include <cmath>
-#include <map>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -49,11 +48,7 @@ public:
     // Parallelisation: merge results from different threads
     void merge(const NNService& other, bool disjoint_users = true);
 
-    // Analysis of model
-    uint64_t compute_sparsity_M() const;
-    double compute_avg_cos();
-
-private:
+//private:
     // Timestamp of previous iteration
     uint64_t _t0;
 
@@ -66,8 +61,6 @@ private:
     // Placeholder for inverted index from users to items
     std::unordered_map<uint32_t, std::vector<uint32_t> > _user2rec;
     std::unordered_map<uint32_t, std::vector<uint32_t> > _user2nonrec;
-    //std::map<uint32_t, std::vector<uint32_t> > _user2rec;
-    //std::map<uint32_t, std::vector<uint32_t> > _user2nonrec;
 
     // Placeholder for item recommendability
     std::unordered_map<uint32_t, bool> _item2recomm;

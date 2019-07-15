@@ -15,24 +15,23 @@ void NNService::dynamic_index(const std::vector<std::pair<uint32_t, uint32_t> >&
         // Extract user u
         uint32_t u = iterator.second;
         // Recommendability status of i
-        //bool i_r = _item2recomm[i];
+        bool i_r = _item2recomm[i];
         // All recommendable items seen by the same user get a similarity boost
         for (auto j: _user2rec[u]) {
             // Update intersection between items
             _m.increment(i, j);
         }
-        _user2rec[u].emplace_back(i);
         // All non-recommendable items as well, if i is recommendable
-        //if(i_r) {
-        //    for (auto j: _user2nonrec[u]) {
-        //        // Update intersection between items
-        //        _m.increment(i, j);
-        //    }
-        //    // Add i to recommendable items seen by user u
-        //    _user2rec[u].emplace_back(i);
-        //} else {
-        //    _user2nonrec[u].emplace_back(i);
-       // }
+        if(i_r) {
+            for (auto j: _user2nonrec[u]) {
+                // Update intersection between items
+                _m.increment(i, j);
+            }
+            // Add i to recommendable items seen by user u
+            _user2rec[u].emplace_back(i);
+        } else {
+            _user2nonrec[u].emplace_back(i);
+        }
     }
 }
 
@@ -130,44 +129,28 @@ void NNService::merge(const NNService& other, bool disjoint_users) {
     if(disjoint_users) {
         // Merge seen recommendable items
         this->_user2rec.insert(other._user2rec.begin(), other._user2rec.end());
-    } else {
+
+        // Merge seen non-recommendable items
+        this->_user2nonrec.insert(other._user2nonrec.begin(), other._user2nonrec.end());
+    } else { // User sets are not disjoint
         // For all users that appear in 'other'
-        // Compute intersection between items they have seen in 'this' and items they have seen in 'other'
-
-        /* Unordered-map-specific implementation! */
+        // Compute intersection between recommendable items they have seen in 'this' and all items they have seen in 'other'
         for(auto user_rec: other._user2rec) {
-            bool new_user = true;
             for(auto i: user_rec.second) {
-                for(auto j: this->_user2rec[user_rec.first]) {
-                    this->_m.increment(i, j);
-                    new_user = false;
-                }
+                for(auto j: this->_user2rec[user_rec.first]) this->_m.increment(i, j);
+                for(auto j: this->_user2nonrec[user_rec.first]) this->_m.increment(i, j);
             }
-            if(!new_user) this->_user2rec[user_rec.first].insert(this->_user2rec[user_rec.first].end(),user_rec.second.begin(),user_rec.second.end());
         }
-        
-        // Add 'new users'
-        this->_user2rec.insert(other._user2rec.begin(), other._user2rec.end());
-    }
-}
-
-uint64_t NNService::compute_sparsity_M() const {
-    return _m.get_sparsity();
-}
-
-double NNService::compute_avg_cos(){
-    // Placeholder for running sum and number of samples
-    double sum = .0;
-    uint64_t n_pairs = 0;
-    // For every item-pair with a non-zero intersection
-    for(auto i_j_v: _m) {
-        for(auto j_v: i_j_v.second) {
-            // Compute cosine similarity and add to sum
-            sum += j_v.second;
-            //sum += j_v.second / (sqrt(_item2count[i_j_v.first])*sqrt(_item2count[j_v.first]));
-            ++n_pairs;
+        // Compute intersection between non-recommendable items they have seen in 'this' and recommendable items they have seen in 'other'
+        for(auto user_rec: other._user2nonrec) {
+            for(auto i: user_rec.second) {
+                for(auto j: this->_user2rec[user_rec.first]) this->_m.increment(i, j);
+                //for(auto j: this->_user2nonrec[user_rec.first]) this->_m.increment(i, j);
+            }
         }
+        // For all users that appear in 'other', merge inverted indices with existing ones for recommendable items
+        for(auto user_rec: other._user2rec) this->_user2rec[user_rec.first].insert(this->_user2rec[user_rec.first].end(),user_rec.second.begin(),user_rec.second.end());
+        // For all users that appear in 'other', merge inverted indices with existing ones for non-recommendable items
+        for(auto user_rec: other._user2nonrec) this->_user2nonrec[user_rec.first].insert(this->_user2nonrec[user_rec.first].end(),user_rec.second.begin(),user_rec.second.end());
     }
-    std::cout << "\tNumber of non-zero pairs:\t" << n_pairs << std::endl;
-    return sum / n_pairs;
 }
