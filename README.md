@@ -2,6 +2,16 @@
 
 C++ source code for the Dynamic Index algorithm proposed in "Efficient Similarity Computation for Collaborative Filtering in Dynamic Environments", as appeared in the proceedings of the 2019 ACM International Conference on Recommender Systems.
 
+OpenMP is required for parallellisation.
+Instructions for compilation using CMake are as follows:
+
+```
+$ cd dynamicindex/src
+$ mkdir build; cd build
+$ cmake ..
+$ make all
+```
+
 Abstract for the paper:
 > "The problem of computing all pairwise similarities in a large collection of vectors is a well-known and common data mining task.
 > As the number and dimensionality of these vectors keeps increasing, however, currently existing approaches are often unable to meet the strict efficiency requirements imposed by the environments they need to perform in.
